@@ -20,11 +20,29 @@ type Release struct {
 	Pluck []string
 }
 
-//Get returns a channel of gonzo.Files that match the provided patterns.
-func Get(ctx context.Context, release Release) gonzo.Pipe {
+func Get(ctx context.Context, release Release, releases ...Release) gonzo.Pipe {
 
+	var all []gonzo.Pipe
+	for _, release := range append([]Release{release}, releases...) {
+		all = append(all, get(ctx, release))
+	}
+
+	switch len(all) {
+	case 0:
+		panic("Something went wrong: Expected at least one gonzo.Pipe got 0")
+	case 1:
+		return all[0]
+	default:
+		return util.Merge(all[0], all[1:]...)
+	}
+}
+
+func get(ctx context.Context, release Release) gonzo.Pipe {
+
+	repo := fmt.Sprintf("%s/%s#%s", release.User, release.Repo, release.Tag)
+	ctx.Warn(repo)
 	return web.Get(
-		context.WithValue(ctx, "repo", fmt.Sprintf("%s/%s#%s", release.User, release.Repo, release.Tag)),
+		context.WithValue(ctx, "repo", repo),
 		fmt.Sprintf(
 			"https://codeload.github.com/%s/%s/tar.gz/%s",
 			release.User,
