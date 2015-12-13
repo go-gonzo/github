@@ -20,21 +20,13 @@ type Release struct {
 	Pluck []string
 }
 
-func Get(ctx context.Context, release Release, releases ...Release) gonzo.Pipe {
+func Get(ctx context.Context, releases ...Release) gonzo.Pipe {
 
 	var all []gonzo.Pipe
-	for _, release := range append([]Release{release}, releases...) {
+	for _, release := range releases {
 		all = append(all, get(ctx, release))
 	}
-
-	switch len(all) {
-	case 0:
-		panic("Something went wrong: Expected at least one gonzo.Pipe got 0")
-	case 1:
-		return all[0]
-	default:
-		return util.Merge(all[0], all[1:]...)
-	}
+	return util.Merge(ctx, all...)
 }
 
 func get(ctx context.Context, release Release) gonzo.Pipe {
