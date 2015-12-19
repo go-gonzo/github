@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-gonzo/archive/tar"
 	"github.com/go-gonzo/compress/gzip"
+	"github.com/go-gonzo/path"
 	"github.com/go-gonzo/util"
 	"github.com/go-gonzo/web"
 )
@@ -47,7 +48,7 @@ func get(ctx context.Context, release Release) gonzo.Pipe {
 			StripComponenets: 1,
 			Pluck:            release.Pluck,
 		}),
-		util.Rename(func(old string) string {
+		path.Rename(func(old string) string {
 			return filepath.Join(release.Repo, old)
 		}),
 	)
